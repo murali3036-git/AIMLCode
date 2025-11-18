@@ -46,4 +46,19 @@ namespace MachinelearningClass
         public uint PredictedClusterId { get; set; }
         //public float[] Score { get; set; }
     }
+    public class NiftyLagData
+    {
+        [LoadColumn(0)] public string Date { get; set; }
+        [LoadColumn(1)] public float Nifty { get; set; }
+
+        [LoadColumn(2)] public float NiftyLag1 { get; set; }
+        [LoadColumn(3)] public float NiftyLag2 { get; set; }
+        [LoadColumn(4)] public float NiftyLag3 { get; set; }
+    }
+
+    public class NiftyPrediction
+    {
+        [ColumnName("Score")]
+        public float PredictedValue { get; set; }
+    }
 }

@@ -35,6 +35,7 @@ namespace MachinelearningClass
                 // Load data (ensure CSV has header: Price)
                 var dataView = mlContext.Data.LoadFromTextFile<NiftyData>(
                     path: "C:\\Users\\shivB\\source\\repos\\MachinelearningClass\\MachinelearningClass\\Data\\Nifty50.csv",
+                    // path: "C:\\Users\\shivB\\source\\repos\\MachinelearningClass\\MachinelearningClass\\Data\\Nifty50.csv",
                     hasHeader: true,
                     separatorChar: ',');
            
@@ -68,8 +69,49 @@ namespace MachinelearningClass
 
             Console.ReadLine();
         }
-        }
+        public static void PredictNiftyUsingLags()
+        {
+            var mlContext = new MLContext();
 
+            // Load the lagged CSV
+            var dataView = mlContext.Data.LoadFromTextFile<NiftyLagData>(
+                path: "C:\\Users\\shivB\\source\\repos\\MachinelearningClass\\MachinelearningClass\\Data\\Nifty50_with_lags.csv",
+                hasHeader: true,
+                separatorChar: ',');
+
+
+            var validRows = mlContext.Data.FilterRowsByMissingValues(dataView, "NiftyLag1");
+
+
+            var pipeline = mlContext.Transforms.Concatenate(
+                    "Features",
+                    nameof(NiftyLagData.NiftyLag1),
+                    nameof(NiftyLagData.NiftyLag2),
+                    nameof(NiftyLagData.NiftyLag3)
+                )
+                .Append(mlContext.Regression.Trainers.FastTree(
+                    labelColumnName: nameof(NiftyLagData.Nifty),
+                    featureColumnName: "Features"));
+
+
+            var model = pipeline.Fit(validRows);
+
+
+            var engine = mlContext.Model.CreatePredictionEngine<NiftyLagData, NiftyPrediction>(model);
+
+            var lastRow = mlContext.Data.CreateEnumerable<NiftyLagData>(validRows, reuseRowObject: false).Last();
+
+            var prediction = engine.Predict(lastRow);
+
+
+            Console.WriteLine($"Predicted Next Month Nifty: {prediction.PredictedValue:N2}");
+            Console.WriteLine("====================================");
+
+            Console.ReadLine();
+        }
     }
+   
+
+}
 
 
