@@ -50,6 +50,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AllMiniLmL6V2Sharp": {
+              "target": "Package",
+              "version": "[0.0.3, )"
+            },
             "Microsoft.ML": {
               "target": "Package",
               "version": "[4.0.3, )"
@@ -61,6 +65,14 @@
             "Microsoft.ML.Mkl.Components": {
               "target": "Package",
               "version": "[4.0.3, )"
+            },
+            "Microsoft.ML.OnnxRuntime": {
+              "target": "Package",
+              "version": "[1.23.2, )"
+            },
+            "OpenAI": {
+              "target": "Package",
+              "version": "[2.7.0, )"
             }
           },
           "imports": [

@@ -1,4 +1,5 @@
 ﻿using MachinelearningClass.Cohort;
+using MachinelearningClass.InterviewQuestions;
 using MachinelearningClass.Regression;
 using Microsoft.ML;
 using Microsoft.ML.AutoML;
@@ -104,6 +105,7 @@ namespace MachinelearningClass
             Console.WriteLine($"Best Model: {result.BestRun.TrainerName}");
             Console.Read();
         }
-        
+     
+
     }
 }

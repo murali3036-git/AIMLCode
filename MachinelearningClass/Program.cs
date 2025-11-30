@@ -5,10 +5,12 @@ namespace MachinelearningClass
 {
     internal class Program
     {
-       
-        static void Main(string[] args)
+        public static string datapath = "C:\\Users\\shivB\\source\\repos\\MachinelearningClass\\MachinelearningClass\\Data\\";
+         static void Main(string[] args)
         {
-            //Week1.Lab12();
+            //Week4.MockInterview().Wait();
+            //Week4.Lab15_BertEncoding();
+            //Week4.Lab17_ChatGPTOnline().Wait();
             Console.ReadLine();
         }
     }
