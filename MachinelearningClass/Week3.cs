@@ -145,6 +145,6 @@ namespace MachinelearningClass
             Console.WriteLine($"\nDistance (King vs. Queen): {distanceKingQueen:F4}");
             Console.WriteLine($"Distance (King vs. Camera): {distanceKingCamera:F4}");
         }
-      
+        
     }
 }

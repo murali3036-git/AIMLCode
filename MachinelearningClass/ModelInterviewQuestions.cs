@@ -52,4 +52,10 @@ namespace MachinelearningClass.InterviewQuestions
         public string Answer { get; set; }
         public float[] Embedding { get; set; }
     }
+    public class RAGLookup
+    {
+        public string Description { get; set; }
+        public string QuestionstobeAsked { get; set; }
+        public float[] DescriptionEmbedding { get; set; }
+    }
 }

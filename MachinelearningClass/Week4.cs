@@ -14,6 +14,10 @@ using System.Data;
 using OpenAI;
 using OpenAI.Chat;
 using Google.Protobuf;
+using OpenAI.Embeddings;
+using System.ClientModel;
+using Newtonsoft.Json.Serialization;
+using MachinelearningClass.DataNLP;
 namespace MachinelearningClass
 {
     public class Week4 // NLP
@@ -24,54 +28,25 @@ namespace MachinelearningClass
         // https://huggingface.co/onnx-models/all-MiniLM-L6-v2-onnx/tree/main
         // Data folder does not have the All mini & GPT model and vocab json please download
         // from huggingface
-        public static void Lab15_BertEncoding()
+        
+        public static void Lab15_SimpleBertEncoding()
         {
             var tokenizer = new BertTokenizer(Program.datapath + @"\\vocab.txt");
             var embedder = new AllMiniLmL6V2Embedder(
 
-                Program.datapath +  @"\\all-MiniLM-L6-v2.onnx",
+                Program.datapath + @"\\Model.onnx",
                 tokenizer
             );
+            string texttobeMatched = "I love cricket and especially batting.";
+            var texttobeMatchedV = embedder.GenerateEmbedding(texttobeMatched).ToArray();
 
-            // Our small question–answer list
-            var qaDatabase = new List<QAItem>
-            {
+            Console.WriteLine("Enter text be matched");
+            string inputText = Console.ReadLine();
+            var inputTextV = embedder.GenerateEmbedding(inputText).ToArray();
+            Console.WriteLine(Common.CalculateCosineSimilarity(texttobeMatchedV, inputTextV));
 
-                new QAItem { Question = "What is Dependency Injection in C#?", Answer = "DI allows decoupling dependencies by injecting them." },
-                new QAItem { Question = "What is async/await in C#?", Answer = "async/await enables asynchronous programming." },
-                new QAItem { Question = "What are SOLID principles?", Answer = "SOLID are 5 design principles for maintainable code." },
-                new QAItem { Question = "Liskov in SOLID?", Answer = "SOLID are 5 design principles for maintainable code." }
 
-            };
-
-            // Make embeddings for each stored question
-            foreach (var item in qaDatabase)
-            {
-                // Tokenization happens inside GenerateEmbedding()
-                item.Embedding = embedder.GenerateEmbedding(item.Question).ToArray();
-                Console.WriteLine(item.Embedding);
-            }
-
-            // Ask user for a new question
-            Console.WriteLine("Ask a C# interview question:");
-            string userQuestion = Console.ReadLine() ?? "";
-
-            // Make embedding for the user's question
-            // Tokenization also happens here
-            var userEmbedding = embedder.GenerateEmbedding(userQuestion).ToArray();
-
-            // Find the stored question that is most similar to the user's question
-            var bestMatch = qaDatabase
-                .Select(x => new { QA = x, Similarity = Common.CalculateCosineSimilarity(userEmbedding, x.Embedding) })
-                .OrderByDescending(x => x.Similarity)
-                .First()
-                .QA;
-
-            // Show the best matching question + answer
-            Console.WriteLine($"\nClosest stored question: {bestMatch.Question}");
-            Console.WriteLine($"Answer: {bestMatch.Answer}");
         }
-
         public static void Lab16_FailedGPTEncoding()
         {
             var ml = new MLContext();
@@ -125,7 +100,70 @@ namespace MachinelearningClass
             Console.WriteLine($"Predicted next token ID: {predictedIndex}");
         }
 
-        public static async Task Lab17_ChatGPTOnline()
+        public static async Task Lab17_SimpleChatGPTOnline()
+        {
+            var credential = new ApiKeyCredential(Environment.GetEnvironmentVariable("aikey"));
+            var chatClient = new ChatClient("gpt-3.5-turbo", credential); // Use a standard model for generation
+
+            string simpleSentencePrompt = "I love ";
+
+            ChatCompletion completion = await chatClient.CompleteChatAsync(
+                                        messages: new[]
+                                        {
+                                        new UserChatMessage(simpleSentencePrompt)
+                                        }
+                                        );
+
+            string prediction = completion.Content.Last().Text;
+            Console.WriteLine( prediction );
+        }
+        public static async Task Lab18_RAGChatGPTOnline()
+        {
+            var key = Environment.GetEnvironmentVariable("aikey");
+            var chat = new ChatClient(model: "gpt-4o-mini", key);
+            var embeddingClient = new EmbeddingClient("text-embedding-3-small", key);
+
+            List<RAGLookup> lookupStore = DataforNlp.getRAGData();
+
+            foreach (var item in lookupStore)
+            {
+                var embed = await embeddingClient.GenerateEmbeddingAsync(item.Description);
+                item.DescriptionEmbedding = embed.Value.ToFloats().ToArray();
+
+            }
+            Console.WriteLine("Enter who you are ?");
+
+            string candidateExp = Console.ReadLine();
+            var candidateEmbed = await embeddingClient.GenerateEmbeddingAsync(candidateExp);
+            var candidateVector = candidateEmbed.Value.ToFloats().ToArray();
+
+            var bestMatch = lookupStore
+                .OrderByDescending(x => Common.CalculateCosineSimilarity(x.DescriptionEmbedding, candidateVector))
+                .First();
+
+
+
+            // Start interview with selected questions
+            var messages = new List<ChatMessage>();
+           
+           
+            //messages.Add(new SystemChatMessage("Show him 10 C# and ASP.NET interview question list "));
+            messages.Add(new SystemChatMessage(
+                $"Ask only: {bestMatch.QuestionstobeAsked}. " +
+                "Display atleast 10 questions"));
+            //messages.Add(new UserChatMessage(candidateExp));
+
+
+            var completion = await chat.CompleteChatAsync(messages);
+            string questionfromchatgpt = completion.Value.Content.Last().Text;
+            Console.WriteLine($"{questionfromchatgpt}");
+           
+
+           
+
+
+        }
+        public static async Task Lab19_PromptUnderstanding()
         {
             var key = Environment.GetEnvironmentVariable("aikey");
             //var client = new OpenAIClient(key);
@@ -149,7 +187,9 @@ namespace MachinelearningClass
             
         }
 
-        
+       
+
+
         public class BertInput
         {
             [VectorType]
