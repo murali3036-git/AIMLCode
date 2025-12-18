@@ -11,6 +11,9 @@ y = df["Premium"] # label
 x = df[["Age"]] # feature
 
 model123 = LinearRegression()
-model123.fit(x,y) #trains themodel
-df["predicted"] = model123.predict(x)
-print(df["predicted"])
+model123.fit(x,y) 
+hours = float(input("Enter hours studied: "))
+predicted = model123.predict([[hours]])
+print(predicted[0])
+#df["predicted"] = model123.predict([[hours]])
+#print(df["predicted"])
